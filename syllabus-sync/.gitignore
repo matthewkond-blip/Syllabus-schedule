@@ -8,3 +8,4 @@ backend/uploads/*
 backend/tokens/
 *.sqlite
 .DS_Store
+buildplan.md

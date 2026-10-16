@@ -10,10 +10,10 @@ export const EVENT_TYPES = [
   "other",
 ];
 
-// Gemini's structured-output schema has no concept of an optional field
-// (no .optional()) — fields the model may legitimately not know use
-// .nullable() instead, matching the build plan's "return null for unknown
-// dates or times" rule.
+// This schema is converted to JSON Schema for Groq's strict structured-output
+// mode, which has no concept of an optional field (every property must be
+// required) — fields the model may legitimately not know use .nullable(),
+// matching the build plan's "return null for unknown dates or times" rule.
 export const ExtractedEventSchema = z.object({
   title: z.string(),
   type: z.enum(EVENT_TYPES),
@@ -36,6 +36,33 @@ export const ExtractedEventSchema = z.object({
     .string()
     .nullable()
     .describe("A short verbatim excerpt (<200 chars) from the syllabus text that supports this event."),
+});
+
+// What the frontend sends when syncing. Unlike extraction output, a date is
+// mandatory here — "Needs Review" events must never reach Google Calendar.
+export const SyncEventSchema = z
+  .object({
+    id: z.string().min(1).max(200),
+    title: z.string().trim().min(1).max(300),
+    type: z.enum(EVENT_TYPES),
+    course: z.string().max(100).optional().default(""),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+    time: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Time must be HH:mm")
+      .nullable()
+      .optional(),
+    allDay: z.boolean(),
+    description: z.string().max(5000).nullable().optional(),
+    sourceExcerpt: z.string().max(1000).nullable().optional(),
+    reminderMinutes: z.number().int().min(0).max(40320).optional().default(0),
+  })
+  .refine((e) => e.allDay || e.time, { message: "Timed events need a time", path: ["time"] });
+
+export const SyncRequestSchema = z.object({
+  calendarId: z.string().min(1).default("primary"),
+  timeZone: z.string().min(1).optional(),
+  events: z.array(SyncEventSchema).min(1).max(250),
 });
 
 export const SyllabusExtractionSchema = z.object({

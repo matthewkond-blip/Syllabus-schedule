@@ -1,8 +1,8 @@
 import { Calendar, CheckCircle2, Link2 } from "lucide-react";
 
-export default function Header({ googleConnected, onConnectGoogle }) {
+export default function Header({ googleStatus, connectDisabled, onConnectGoogle, onDisconnectGoogle }) {
   return (
-    <header className="flex items-center justify-between gap-4 py-8">
+    <header className="flex flex-wrap items-center justify-between gap-4 py-8">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-900 text-white shadow-sm">
           <Calendar size={22} strokeWidth={2} />
@@ -13,27 +13,38 @@ export default function Header({ googleConnected, onConnectGoogle }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onConnectGoogle}
-        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-          googleConnected
-            ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-            : "border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
-        }`}
-      >
-        {googleConnected ? (
-          <>
+      {googleStatus.connected ? (
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
             <CheckCircle2 size={16} />
             Google Calendar Connected
-          </>
-        ) : (
-          <>
-            <Link2 size={16} />
-            Connect Google Calendar
-          </>
-        )}
-      </button>
+          </span>
+          <button
+            type="button"
+            onClick={onDisconnectGoogle}
+            className="rounded-full px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          >
+            Disconnect
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onConnectGoogle}
+          disabled={!googleStatus.configured || connectDisabled}
+          title={
+            !googleStatus.configured
+              ? "Add Google OAuth credentials to backend/.env first"
+              : connectDisabled
+                ? "Wait for syllabi to finish processing"
+                : undefined
+          }
+          className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Link2 size={16} />
+          Connect Google Calendar
+        </button>
+      )}
     </header>
   );
 }

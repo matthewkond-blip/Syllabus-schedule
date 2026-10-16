@@ -24,10 +24,16 @@ export default function EventRow({ event, onToggleSelect, onEdit, onDelete }) {
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-medium text-gray-900">{event.title}</p>
           {event.synced && (
-            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+            <a
+              href={event.googleHtmlLink || undefined}
+              target="_blank"
+              rel="noreferrer"
+              title={event.googleHtmlLink ? "Open in Google Calendar" : undefined}
+              className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
+            >
               <CheckCircle2 size={11} />
               Synced
-            </span>
+            </a>
           )}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2">
